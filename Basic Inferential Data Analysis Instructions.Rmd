@@ -1,0 +1,102 @@
+---
+title: "Basic Inferential Data Analysis Instructions"
+author: "Pribylov V.A."
+date: "02 09 2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Overview
+This is a course project needed to analyze the ToothGrowth data in the R datasets package.
+
+## Loading the data
+```{r}
+TG <- ToothGrowth
+```
+
+## Providing basic summary of the data
+```{r}
+summary(TG)
+OJ <- TG$len[TG$supp == 'OJ']
+VC <- TG$len[TG$supp == 'VC']
+```
+
+## Comparison of means for two factor-levels of supp column
+```{r}
+mOJ <- mean(OJ)
+vOJ <- var(OJ)
+nOJ <- length(OJ)
+OJ_confidence_interval <- mOJ + c(-1, 1)*qnorm(0.975)*sqrt(vOJ/nOJ)
+paste0('OJ 95% confidence interval is (',round(OJ_confidence_interval[1], 2),
+       ', ', round(OJ_confidence_interval[2], 2), ')')
+```
+
+```{r}
+mVC <- mean(VC)
+vVC <- var(VC)
+nVC <- length(VC)
+VC_confidence_interval <- mVC + c(-1, 1)*qnorm(0.975)*sqrt(vVC/nVC)
+paste0('VC 95% confidence interval is (',round(VC_confidence_interval[1], 2),
+       ', ', round(VC_confidence_interval[2], 2), ')')
+```
+As we can see, 95% confidence intervals for OJ and VC are intersecting each other. So let's try find 95% confidence interval for difference of their means.  
+```{r}
+pooled_variance <- sqrt(vOJ/nOJ + vVC/nVC)
+difference_confidence_interval <- mOJ - mVC + c(-1, 1)*qnorm(0.975)*pooled_variance
+paste0('95% confidence interval of difference between VC and OJ means is ('
+       ,round(difference_confidence_interval[1], 2),', '
+       , round(difference_confidence_interval[2], 2), ')')
+```
+This confidence interval includes 0, so there can be no difference between their means, but for 90% confidence interval mean for OJ is bigger than mean for VC:
+```{r}
+difference_confidence_interval_90 <- mOJ - mVC + c(-1, 1)*qnorm(0.95)*pooled_variance
+paste0('90% confidence interval of difference between VC and OJ means is ('
+       ,round(difference_confidence_interval_90[1], 2),', '
+       , round(difference_confidence_interval_90[2], 2), ')')
+```
+## Statistical characteristics for dose column
+```{r}
+mns <- NULL
+vars <- NULL
+lens <- NULL
+for (i in levels(as.factor(TG$dose))) {
+    mns <- c(mns, mean(TG$len[TG$dose == i]))
+    vars <- c(vars, var(TG$len[TG$dose == i]))
+    lens <- c(lens, length(TG$len[TG$dose == i]))
+    
+}
+```
+There are some pairwise comparisons between levels of dose:
+```{r}
+confidence_interval_05 <- mns[1] + c(-1, 1)*qnorm(0.975)*sqrt(vars[1]/lens[1])
+confidence_interval_05
+confidence_interval_1 <- mns[2] + c(-1, 1)*qnorm(0.975)*sqrt(vars[2]/lens[2])
+confidence_interval_1
+confidence_interval_2 <- mns[3] + c(-1, 1)*qnorm(0.975)*sqrt(vars[3]/lens[3])
+confidence_interval_2
+```
+As at the previous case let's find 95% confidence intervals of pairwise differences:
+```{r}
+difference_confidence_interval_05_1 <- mns[2] - mns[1] + 
+    c(-1, 1)*qnorm(0.975)*sqrt(vars[1]/lens[1] + vars[2]/lens[2])
+paste0('95% confidence interval of difference between 0.5 and 1 levels means is ('
+       ,round(difference_confidence_interval_05_1[1], 2),', '
+       , round(difference_confidence_interval_05_1[2], 2), ')')
+difference_confidence_interval_1_2 <- mns[3] - mns[2] + 
+    c(-1, 1)*qnorm(0.975)*sqrt(vars[2]/lens[2] + vars[3]/lens[3])
+paste0('95% confidence interval of difference between 1 and 2 levels means is (' 
+       ,round(difference_confidence_interval_1_2[1], 2),', '
+       , round(difference_confidence_interval_1_2[2], 2), ')')
+difference_confidence_interval_05_2 <- mns[3] - mns[1] + 
+    c(-1, 1)*qnorm(0.975)*sqrt(vars[1]/lens[1] + vars[3]/lens[3])
+paste0('95% confidence interval of difference between 0.5 and 2 levels means is (' 
+       ,round(difference_confidence_interval_05_2[1], 2),', '
+       , round(difference_confidence_interval_05_2[2], 2), ')')
+```
+
+So with the increasing of dose level, we also can see increasing of mean length.
+

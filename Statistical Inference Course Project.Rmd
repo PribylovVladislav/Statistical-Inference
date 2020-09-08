@@ -1,0 +1,80 @@
+---
+title: "Statistical Inference Course Project"
+author: "Pribylov V.A."
+date: "02 09 2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Overview 
+
+This is a course project needed to learn some basics in statistical inference such as Central Limit Theorem, confident intervals, etcetera.
+
+## Variables statement
+
+```{r}
+lambda <- 0.2
+mns <- NULL
+vars <- NULL
+```
+
+## Creating the distribution
+
+```{r}
+for (i in 1 : 1000) {
+    distributions <- rexp(40, lambda)
+    mns <- c(mns, mean(distributions))
+    vars <- c(vars, var(distributions))
+}
+```
+
+## Comparison to theoretical values
+
+```{r}
+experimental_mean <- mean(mns)
+experimental_variance <- mean(vars)
+
+theoretical_variance <- 1/lambda**2
+theoretical_mean <- 1/lambda
+
+difference_mean <- theoretical_mean - experimental_mean
+difference_variance <- theoretical_variance - experimental_variance
+```
+So we can see, both mean difference and variance difference between theoretical and simulating values are about to 0:
+```{r}
+paste0('Mean difference is ', difference_mean)
+paste0('Variance difference is ', difference_variance)
+```
+
+So we will assume that experimental mean and variance are equal to theoretical using confidence intervals:
+```{r}
+mean_confidence_interval <- experimental_mean + 
+    c(-1, 1)*qnorm(.975)*sqrt(experimental_variance/1000)
+variance_confidence_interval <- experimental_variance + 
+    c(-1, 1)*qnorm(.975)*sqrt(experimental_variance/1000)
+```
+
+```{r}
+paste0('Confidence interval for mean is (', mean_confidence_interval[1],
+       ', ', mean_confidence_interval[2], ')')
+paste0('Confidence interval for variance is (', variance_confidence_interval[1], 
+       ', ', variance_confidence_interval[2], ')')
+```
+And we can see, that experimental mean and variance lies inside of each confidence interval:
+```{r}
+paste0('Theoretical mean is ', theoretical_mean)
+paste0('Theoretical variance is ', theoretical_variance)
+```
+
+## Distribution plot
+
+```{r, echo=FALSE}
+hist(mns, xlab = 'Means', main = 'Histogram of means')
+```
+
+According to this plot, distribution approximates by normal distribution very good.
